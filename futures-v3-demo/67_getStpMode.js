@@ -1,31 +1,33 @@
 /**
- * Account Trade List / 账户成交历史 (USER_DATA)
- * GET /api/v3/userTrades
+ * Get Current STP Mode / 查询当前账户 STP 模式
+ * GET /fapi/v3/stpMode
+ *
+ * Get the account's current Self-Trade Prevention (STP) mode.
+ * 查询账户当前的自成交防止（STP）模式。
+ *
+ * Weight: 30
+ * Security: USER_DATA (requires signer + nonce + signature)
  */
 
 const axios = require('axios');
 const config = require('./config');
+const { signParamsWeb3, buildQueryString } = require('./utils');
 
-const params = {
-    "symbol": "ETHUSDT",  // 可选
-    "orderId": 464221283,
-    "limit": 100
-};
-
-async function userTrades() {
+async function getStpMode() {
     try {
-        console.log('Request / 请求:', 'GET /api/v3/userTrades');
-        console.log('Parameters / 参数:', params);
+        console.log('Request / 请求:', 'GET /fapi/v3/stpMode');
 
-        const { signParamsWeb3, buildQueryString } = require('./utils');
         const signedParams = await signParamsWeb3(
-            params,
+            {},
             config.USER_ADDRESS,
             config.SIGNER_ADDRESS,
             config.PRIVATE_KEY
         );
         const queryString = buildQueryString(signedParams);
-        const response = await axios.get(`${config.BASE_URL}/api/v3/userTrades?${queryString}`);
+
+        const response = await axios.get(
+            `${config.BASE_URL}/fapi/v3/stpMode?${queryString}`
+        );
 
         console.log(JSON.stringify(response.data, null, 2));
         return response.data;
@@ -36,9 +38,9 @@ async function userTrades() {
 }
 
 if (require.main === module) {
-    userTrades()
+    getStpMode()
         .then(() => console.log('\n✓ Completed / 完成'))
         .catch(() => console.log('\n✗ Failed / 失败'));
 }
 
-module.exports = userTrades;
+module.exports = getStpMode;
